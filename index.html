@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Additional custom styles if needed */
+  </style>
+</head>
+<body class="bg-green-300 flex items-center justify-center min-h-screen">
+
+  <div class="bg-green-50 p-8 rounded shadow-md text-center h-auto">
+    <h1 class="text-2xl font-bold mb-4">Convert your Link to QR code</h1>
+    <input id="urlInput" type="text" placeholder="Enter your URL" class="border p-2 rounded w-full mb-4">
+    <button id="generateBtn" class="bg-blue-500 text-white p-2 rounded">Generate QR Code</button>
+
+    <div id="qrContainer" class="ml-24 mt-6 ">
+      <!-- QR Code will be displayed here -->
+    </div>
+
+    <div id="downloadContainer" class="mt-4 hidden">
+      <label for="fileFormat" class="block text-left mb-2">File format:</label>
+      <select id="fileFormat" class="border p-2 rounded w-full mb-4">
+        <option value="png">PNG</option>
+        <option value="svg">SVG</option>
+        <option value="jpeg">JPEG</option>
+      </select>
+      <button id="downloadBtn" class="bg-green-500 text-white p-2 rounded">Download</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script>
+    const urlInput = document.getElementById('urlInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const qrContainer = document.getElementById('qrContainer');
+    const downloadContainer = document.getElementById('downloadContainer');
+    const fileFormat = document.getElementById('fileFormat');
+    const downloadBtn = document.getElementById('downloadBtn');
+    let qrCodeCanvas;
+
+    generateBtn.addEventListener('click', () => {
+      const url = urlInput.value;
+      if (url) {
+        QRCode.toCanvas(url, { errorCorrectionLevel: 'H' }, (error, canvas) => {
+          if (error) console.error(error);
+          qrContainer.innerHTML = '';
+          qrContainer.appendChild(canvas);
+          qrCodeCanvas = canvas;
+          downloadContainer.classList.remove('hidden');
+        });
+      }
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (qrCodeCanvas) {
+        const format = fileFormat.value;
+        const link = document.createElement('a');
+        if (format === 'png' || format === 'jpeg') {
+          link.href = qrCodeCanvas.toDataURL(`image/${format}`);
+        } else if (format === 'svg') {
+          QRCode.toString(urlInput.value, { type: 'svg' }, (error, svg) => {
+            if (error) console.error(error);
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            link.href = URL.createObjectURL(blob);
+          });
+        }
+        link.download = `qrcode.${format}`;
+        link.click();
+      }
+    });
+  </script>
+
+</body>
+</html>
